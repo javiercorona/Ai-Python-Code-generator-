@@ -3,347 +3,690 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Coding Assistant</title>
+    <title>LocalPythonAI - Web Interface</title>
     <style>
-        body {
-            font-family: 'Courier New', monospace;
-            background-color: #1e1e1e;
-            color: #d4d4d4;
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --dark: #1b263b;
+            --light: #f8f9fa;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #f72585;
+            --gray: #adb5bd;
+        }
+        
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark);
+            color: var(--light);
             line-height: 1.6;
         }
+        
         .container {
             max-width: 1200px;
             margin: 0 auto;
-        }
-        header {
-            background-color: #252526;
             padding: 20px;
-            border-radius: 5px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            height: 100vh;
+        }
+        
+        .sidebar {
+            background-color: #2a3240;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            gap: 20px;
+        }
+        
+        .chat-container {
+            background-color: #2a3240;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
             margin-bottom: 20px;
-            border-left: 4px solid #007acc;
         }
-        h1 {
-            color: #569cd6;
-            margin: 0;
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            max-width: 80%;
         }
-        .subtitle {
-            color: #9cdcfe;
-            font-size: 0.9em;
-            margin-top: 5px;
+        
+        .user-message {
+            background-color: var(--primary);
+            align-self: flex-end;
         }
-        .panel {
-            background-color: #252526;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-left: 4px solid #4ec9b0;
+        
+        .ai-message {
+            background-color: #3a4556;
+            align-self: flex-start;
         }
-        .panel-title {
-            color: #4ec9b0;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .panel-subtitle {
-            color: #9cdcfe;
-            font-size: 0.8em;
-            margin-bottom: 10px;
-        }
+        
         .code-block {
             background-color: #1e1e1e;
-            border: 1px solid #3a3d41;
-            border-radius: 3px;
+            color: #d4d4d4;
             padding: 15px;
+            border-radius: 5px;
+            font-family: 'Consolas', 'Courier New', monospace;
             overflow-x: auto;
-            font-family: 'Courier New', monospace;
-            white-space: pre;
             margin: 10px 0;
+            position: relative;
         }
-        .line-numbers {
-            color: #858585;
-            margin-right: 15px;
-            user-select: none;
-        }
-        .command-line {
+        
+        .code-header {
             display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            color: var(--gray);
+        }
+        
+        .code-copy {
+            cursor: pointer;
+            color: var(--accent);
+        }
+        
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+        
+        textarea {
+            flex-grow: 1;
+            padding: 15px;
+            border-radius: 8px;
+            border: none;
+            background-color: #3a4556;
+            color: var(--light);
+            resize: none;
+            font-size: 16px;
+        }
+        
+        button {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--primary);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--secondary);
+        }
+        
+        button:disabled {
+            background-color: var(--gray);
+            cursor: not-allowed;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #2a3240;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .control-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        select, input[type="range"] {
+            padding: 8px;
+            border-radius: 5px;
+            border: none;
+            background-color: #3a4556;
+            color: var(--light);
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--success);
+        }
+        
+        .status.offline .status-indicator {
+            background-color: var(--danger);
+        }
+        
+        .panel {
+            background-color: #2a3240;
+            border-radius: 10px;
+            padding: 20px;
             margin-bottom: 20px;
         }
-        .prompt {
-            color: #4ec9b0;
-            margin-right: 10px;
-            user-select: none;
+        
+        .panel-title {
+            margin-bottom: 15px;
+            color: var(--accent);
+            font-size: 1.2em;
         }
-        #user-input {
-            background-color: #252526;
-            border: 1px solid #3a3d41;
-            color: #d4d4d4;
-            font-family: 'Courier New', monospace;
-            padding: 8px;
-            flex-grow: 1;
-            border-radius: 3px;
+        
+        .command-list {
+            list-style: none;
         }
-        .stats-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 10px 0;
-        }
-        .stats-table th {
-            background-color: #2d2d2d;
-            color: #569cd6;
-            text-align: left;
-            padding: 8px;
-        }
-        .stats-table td {
-            padding: 8px;
-            border-bottom: 1px solid #3a3d41;
-        }
-        .stats-table tr:last-child td {
-            border-bottom: none;
-        }
-        .success {
-            color: #4ec9b0;
-        }
-        .error {
-            color: #f48771;
-        }
-        .warning {
-            color: #dcdcaa;
-        }
-        .info {
-            color: #9cdcfe;
-        }
-        .btn {
-            background-color: #0e639c;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 3px;
+        
+        .command-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #3a4556;
             cursor: pointer;
-            margin-right: 10px;
         }
-        .btn:hover {
-            background-color: #1177bb;
+        
+        .command-item:hover {
+            color: var(--accent);
         }
-        .btn-danger {
-            background-color: #f14c4c;
+        
+        .command-desc {
+            font-size: 0.8em;
+            color: var(--gray);
         }
-        .btn-danger:hover {
-            background-color: #ff6161;
+        
+        .tab-container {
+            display: flex;
+            border-bottom: 1px solid #3a4556;
+            margin-bottom: 15px;
         }
-        .btn-group {
-            margin: 15px 0;
+        
+        .tab {
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+        
+        .tab.active {
+            border-bottom: 2px solid var(--accent);
+            color: var(--accent);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .analysis-metric {
+            margin-bottom: 10px;
+        }
+        
+        .metric-name {
+            font-weight: bold;
+            color: var(--accent);
+        }
+        
+        .progress-bar {
+            height: 5px;
+            background-color: #3a4556;
+            border-radius: 5px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--success);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>🚀 AI Coding Assistant</h1>
-            <div class="subtitle">Model: deepseek-ai/deepseek-coder-1.3b-base | Device: CUDA | Safety: ON | Auto-docs: OFF</div>
-        </header>
-
-        <div class="panel">
-            <div class="panel-title">Interactive Console</div>
-            <div class="panel-subtitle">Type your coding request or !help for commands</div>
-            
-            <div class="command-line">
-                <span class="prompt">>>></span>
-                <input type="text" id="user-input" placeholder="Enter your request...">
+        <div class="sidebar">
+            <div class="panel">
+                <div class="panel-title">Quick Commands</div>
+                <ul class="command-list">
+                    <li class="command-item">
+                        <div>Generate Code</div>
+                        <div class="command-desc">Create code from description</div>
+                    </li>
+                    <li class="command-item">
+                        <div>Explain Code</div>
+                        <div class="command-desc">Get explanation of code</div>
+                    </li>
+                    <li class="command-item">
+                        <div>Debug Code</div>
+                        <div class="command-desc">Fix errors in code</div>
+                    </li>
+                    <li class="command-item">
+                        <div>Refactor Code</div>
+                        <div class="command-desc">Improve existing code</div>
+                    </li>
+                    <li class="command-item">
+                        <div>Generate Tests</div>
+                        <div class="command-desc">Create test cases</div>
+                    </li>
+                    <li class="command-item">
+                        <div>Convert Code</div>
+                        <div class="command-desc">Translate to another language</div>
+                    </li>
+                </ul>
             </div>
             
-            <div class="btn-group">
-                <button class="btn" onclick="generateCode()">Generate</button>
-                <button class="btn" onclick="executeCode()">Execute</button>
-                <button class="btn" onclick="generateDocs()">Document</button>
-                <button class="btn" onclick="generateTests()">Tests</button>
-                <button class="btn" onclick="showHelp()">Help</button>
-                <button class="btn btn-danger" onclick="clearConsole()">Clear</button>
+            <div class="panel">
+                <div class="panel-title">Project Files</div>
+                <div id="project-files">
+                    <div class="file-item">main.py</div>
+                    <div class="file-item">utils.py</div>
+                    <div class="file-item">requirements.txt</div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-title">Analysis</div>
+                <div class="analysis-metric">
+                    <div class="metric-name">Code Quality</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 85%"></div>
+                    </div>
+                </div>
+                <div class="analysis-metric">
+                    <div class="metric-name">Security</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 92%"></div>
+                    </div>
+                </div>
+                <div class="analysis-metric">
+                    <div class="metric-name">Performance</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 78%"></div>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <div class="panel" id="output-panel">
-            <div class="panel-title">Generated Code</div>
-            <div class="panel-subtitle">42 lines | Generated in 3.21s | Tokens: 256</div>
-            <div class="code-block" id="code-output">
-<span class="line-numbers">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br>22<br>23<br>24<br>25<br>26<br>27<br>28<br>29<br>30<br>31<br>32<br>33<br>34<br>35<br>36<br>37<br>38<br>39<br>40<br>41<br>42</span>def fibonacci(n: int) -> list:
-    """Generate a Fibonacci sequence up to n terms
-    
-    Args:
-        n (int): Number of terms to generate
         
-    Returns:
-        list: Fibonacci sequence
-    """
-    if n <= 0:
-        return []
-    elif n == 1:
-        return [0]
-    
-    sequence = [0, 1]
-    while len(sequence) < n:
-        next_num = sequence[-1] + sequence[-2]
-        sequence.append(next_num)
-    
-    return sequence
-
-def is_prime(num: int) -> bool:
-    """Check if a number is prime
-    
-    Args:
-        num (int): Number to check
-        
-    Returns:
-        bool: True if prime, False otherwise
-    """
-    if num <= 1:
-        return False
-    for i in range(2, int(num**0.5) + 1):
-        if num % i == 0:
-            return False
-    return True
-
-def main():
-    """Demo the functions"""
-    print("Fibonacci sequence:", fibonacci(10))
-    print("Prime check for 17:", is_prime(17))
-
-if __name__ == "__main__":
-    main()</div>
-        </div>
-
-        <div class="panel" id="execution-panel" style="display: none;">
-            <div class="panel-title">Execution Results</div>
-            <div class="panel-subtitle">Status: <span class="success">SUCCESS</span></div>
-            <div class="code-block" id="execution-output">
-Fibonacci sequence: [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
-Prime check for 17: True
+        <div class="main-content">
+            <div class="controls">
+                <div class="control-group">
+                    <select id="language-select">
+                        <option value="python">Python</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="html">HTML</option>
+                        <option value="css">CSS</option>
+                    </select>
+                    <button id="run-btn">Run</button>
+                    <button id="docs-btn">Docs</button>
+                    <button id="tests-btn">Tests</button>
+                </div>
+                <div class="status">
+                    <div class="status-indicator"></div>
+                    <span>LocalPythonAI Ready</span>
+                </div>
+                <div class="control-group">
+                    <input type="range" id="temp-slider" min="0" max="1" step="0.1" value="0.7">
+                    <span id="temp-value">0.7</span>
+                </div>
             </div>
-        </div>
+            
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message ai-message">
+                        Welcome to LocalPythonAI! I'm your AI coding assistant. 
+                        How can I help you with your code today?
+                    </div>
+                    
+                    <div class="message user-message">
+                        Create a Python function to calculate factorial
+                    </div>
+                    
+                    <div class="message ai-message">
+                        Here's a Python function to calculate factorial:
+                        <div class="code-block">
+                            <div class="code-header">
+                                <span>python</span>
+                                <span class="code-copy">Copy</span>
+                            </div>
+                            <pre><code>def factorial(n):
+    """Calculate factorial of a number"""
+    if n == 0:
+        return 1
+    else:
+        return n * factorial(n-1)</code></pre>
+                        </div>
+                    </div>
+                    
+                    <div class="message user-message">
+                        Can you explain how this works?
+                    </div>
+                    
+                    <div class="message ai-message">
+                        The factorial function uses recursion to calculate the product of all positive integers up to n. 
+                        It works by:
+                        <ul>
+                            <li>Base case: factorial(0) = 1</li>
+                            <li>Recursive case: factorial(n) = n × factorial(n-1)</li>
+                        </ul>
+                        For example, factorial(5) = 5 × 4 × 3 × 2 × 1 = 120
+                    </div>
+                </div>
+                
+                <div class="input-area">
+                    <textarea id="user-input" placeholder="Type your prompt or command here..."></textarea>
+                    <button id="send-btn">Send</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="tab-container">
+                    <div class="tab active" data-tab="analysis">Analysis</div>
+                    <div class="tab" data-tab="console">Console Output</div>
+                    <div class="tab" data-tab="tests">Tests</div>
+                </div>
+                
+                <div class="tab-content active" id="analysis-content">
+                    <div class="analysis-metric">
+                        <div class="metric-name">Complexity</div>
+                        <div>Average: 2.3 | Max: 5 (factorial function)</div>
+                    </div>
+                    <div class="analysis-metric">
+                        <div class="metric-name">Style Issues</div>
+                        <div>2 issues: Line 5 too long (85 chars), Missing type hints</div>
+                    </div>
+                    <div class="analysis-metric">
+                        <div class="metric-name">Security</div>
+                        <div>No issues found</div>
+                    </div>
+                    <div class="analysis-metric">
+                        <div class="metric-name">Documentation</div>
+                        <div>100% coverage</div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="console-content">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>console</span>
+                        </div>
+                        <pre><code>>>> factorial(5)
+120
+>>> factorial(10)
+3628800</code></pre>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="tests-content">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>python</span>
+                            <span class="code-copy">Copy</span>
+                        </div>
+                        <pre><code>import pytest
 
-        <div class="panel" id="stats-panel" style="display: none;">
-            <div class="panel-title">Assistant Statistics</div>
-            <table class="stats-table">
-                <tr>
-                    <th>Metric</th>
-                    <th>Value</th>
-                </tr>
-                <tr>
-                    <td>Total Generations</td>
-                    <td>42</td>
-                </tr>
-                <tr>
-                    <td>Average Time (s)</td>
-                    <td>3.21</td>
-                </tr>
-                <tr>
-                    <td>Model</td>
-                    <td>deepseek-ai/deepseek-coder-1.3b-base</td>
-                </tr>
-                <tr>
-                    <td>Device</td>
-                    <td>CUDA</td>
-                </tr>
-                <tr>
-                    <td>Safety Checks</td>
-                    <td>ON</td>
-                </tr>
-                <tr>
-                    <td>Project Files</td>
-                    <td>3</td>
-                </tr>
-            </table>
-        </div>
-
-        <div class="panel" id="help-panel" style="display: none;">
-            <div class="panel-title">Available Commands</div>
-            <div class="code-block">
-!help       - Show this help message
-!run        - Execute last generated code
-!docs       - Auto-document code
-!tests      - Generate test cases
-!profile    - Profile code performance
-!git_init   - Initialize git repo
-!api        - Start web server
-!stats      - Show assistant statistics
-!clear      - Clear conversation history
-!exit       - Quit
+def test_factorial():
+    """Test factorial function"""
+    assert factorial(0) == 1
+    assert factorial(1) == 1
+    assert factorial(5) == 120
+    assert factorial(10) == 3628800</code></pre>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        function generateCode() {
-            const input = document.getElementById('user-input').value;
-            if (!input) return;
+        // DOM Elements
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const chatMessages = document.getElementById('chat-messages');
+        const runBtn = document.getElementById('run-btn');
+        const docsBtn = document.getElementById('docs-btn');
+        const testsBtn = document.getElementById('tests-btn');
+        const languageSelect = document.getElementById('language-select');
+        const tempSlider = document.getElementById('temp-slider');
+        const tempValue = document.getElementById('temp-value');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const copyButtons = document.querySelectorAll('.code-copy');
+        
+        // Event Listeners
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        runBtn.addEventListener('click', executeCode);
+        docsBtn.addEventListener('click', generateDocs);
+        testsBtn.addEventListener('click', generateTests);
+        
+        tempSlider.addEventListener('input', () => {
+            tempValue.textContent = tempSlider.value;
+        });
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(`${tabId}-content`).classList.add('active');
+            });
+        });
+        
+        copyButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const codeBlock = e.target.closest('.code-block').querySelector('code');
+                navigator.clipboard.writeText(codeBlock.textContent);
+                e.target.textContent = 'Copied!';
+                setTimeout(() => {
+                    e.target.textContent = 'Copy';
+                }, 2000);
+            });
+        });
+        
+        // Functions
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
             
-            // In a real implementation, this would call the backend API
-            document.getElementById('output-panel').style.display = 'block';
-            document.getElementById('execution-panel').style.display = 'none';
-            document.getElementById('stats-panel').style.display = 'none';
-            document.getElementById('help-panel').style.display = 'none';
+            // Add user message to chat
+            addMessage(message, 'user');
+            userInput.value = '';
             
-            // Simulate different responses based on input
-            if (input.includes('fibonacci')) {
-                document.getElementById('code-output').innerHTML = 
-                    `<span class="line-numbers">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14</span>def fibonacci(n):\n    """Generate Fibonacci sequence up to n terms"""\n    sequence = []\n    a, b = 0, 1\n    for _ in range(n):\n        sequence.append(a)\n        a, b = b, a + b\n    return sequence\n\n# Example usage\nif __name__ == "__main__":\n    print(fibonacci(10))  # [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]`;
-            } else if (input.includes('prime')) {
-                document.getElementById('code-output').innerHTML = 
-                    `<span class="line-numbers">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13</span>def is_prime(num):\n    """Check if a number is prime"""\n    if num <= 1:\n        return False\n    for i in range(2, int(num**0.5) + 1):\n        if num % i == 0:\n            return False\n    return True\n\n# Example usage\nprint(is_prime(17))  # True\nprint(is_prime(20))  # False`;
+            // Check for commands
+            if (message.startsWith('!')) {
+                handleCommand(message);
+                return;
+            }
+            
+            // Simulate AI response
+            setTimeout(() => {
+                if (message.toLowerCase().includes('factorial')) {
+                    addCodeMessage(`def factorial(n):
+    """Calculate factorial of a number"""
+    if n == 0:
+        return 1
+    else:
+        return n * factorial(n-1)`, 'python');
+                } else if (message.toLowerCase().includes('fibonacci')) {
+                    addCodeMessage(`def fibonacci(n):
+    """Generate Fibonacci sequence up to n terms"""
+    a, b = 0, 1
+    for _ in range(n):
+        print(a, end=' ')
+        a, b = b, a + b`, 'python');
+                } else {
+                    addMessage("I've generated the code you requested. Would you like me to explain it or run it?", 'ai');
+                }
+            }, 1000);
+        }
+        
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', `${sender}-message`);
+            messageDiv.textContent = text;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function addCodeMessage(code, language) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', 'ai-message');
+            
+            const codeBlock = document.createElement('div');
+            codeBlock.classList.add('code-block');
+            
+            codeBlock.innerHTML = `
+                <div class="code-header">
+                    <span>${language}</span>
+                    <span class="code-copy">Copy</span>
+                </div>
+                <pre><code>${code}</code></pre>
+            `;
+            
+            messageDiv.appendChild(codeBlock);
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Add event listener to new copy button
+            codeBlock.querySelector('.code-copy').addEventListener('click', (e) => {
+                const codeElement = e.target.closest('.code-block').querySelector('code');
+                navigator.clipboard.writeText(codeElement.textContent);
+                e.target.textContent = 'Copied!';
+                setTimeout(() => {
+                    e.target.textContent = 'Copy';
+                }, 2000);
+            });
+        }
+        
+        function handleCommand(command) {
+            const cmd = command.toLowerCase();
+            
+            if (cmd === '!run') {
+                executeCode();
+            } else if (cmd === '!docs') {
+                generateDocs();
+            } else if (cmd === '!tests') {
+                generateTests();
+            } else if (cmd === '!explain') {
+                addMessage("The factorial function uses recursion to calculate the product of all positive integers up to n.", 'ai');
             } else {
-                document.getElementById('code-output').innerHTML = 
-                    `<span class="line-numbers">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10</span># ${input}\n\ndef solution():\n    """Implementation for: ${input}"""\n    # TODO: Add implementation\n    pass\n\nif __name__ == "__main__":\n    result = solution()\n    print(f"Result: {result}")`;
+                addMessage("Unknown command. Type !help for a list of commands.", 'ai');
             }
         }
         
         function executeCode() {
-            document.getElementById('execution-panel').style.display = 'block';
-            document.getElementById('stats-panel').style.display = 'none';
-            document.getElementById('help-panel').style.display = 'none';
+            // Find the last code block in chat
+            const codeBlocks = document.querySelectorAll('.code-block code');
+            if (codeBlocks.length === 0) {
+                addMessage("No code to execute.", 'ai');
+                return;
+            }
+            
+            const lastCode = codeBlocks[codeBlocks.length - 1].textContent;
+            addMessage("Executing code...", 'ai');
             
             // Simulate execution
-            const code = document.getElementById('code-output').innerText;
-            if (code.includes('fibonacci')) {
-                document.getElementById('execution-output').innerText = '[0, 1, 1, 2, 3, 5, 8, 13, 21, 34]';
-            } else if (code.includes('prime')) {
-                document.getElementById('execution-output').innerText = 'True\nFalse';
-            } else {
-                document.getElementById('execution-output').innerText = 'Result: None';
-            }
+            setTimeout(() => {
+                if (lastCode.includes('factorial')) {
+                    addCodeMessage(">>> factorial(5)\n120\n>>> factorial(10)\n3628800", 'console');
+                } else if (lastCode.includes('fibonacci')) {
+                    addCodeMessage(">>> fibonacci(10)\n0 1 1 2 3 5 8 13 21 34", 'console');
+                } else {
+                    addCodeMessage("Code executed successfully with no output.", 'console');
+                }
+                
+                // Switch to console tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                document.querySelector('.tab[data-tab="console"]').classList.add('active');
+                document.getElementById('console-content').classList.add('active');
+            }, 500);
         }
         
         function generateDocs() {
-            alert('Documentation generation would be implemented in the real application');
+            addMessage("Generating documentation...", 'ai');
+            
+            setTimeout(() => {
+                addCodeMessage(`def factorial(n):
+    """Calculate the factorial of a number
+    
+    Parameters
+    ----------
+    n : int
+        The number to calculate factorial for
+        
+    Returns
+    -------
+    int
+        The factorial of n
+    """
+    if n == 0:
+        return 1
+    else:
+        return n * factorial(n-1)`, 'python');
+            }, 500);
         }
         
         function generateTests() {
-            alert('Test generation would be implemented in the real application');
+            addMessage("Generating test cases...", 'ai');
+            
+            setTimeout(() => {
+                addCodeMessage(`import pytest
+
+def test_factorial():
+    """Test factorial function"""
+    assert factorial(0) == 1
+    assert factorial(1) == 1
+    assert factorial(5) == 120
+    assert factorial(10) == 3628800`, 'python');
+                
+                // Switch to tests tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                document.querySelector('.tab[data-tab="tests"]').classList.add('active');
+                document.getElementById('tests-content').classList.add('active');
+            }, 500);
         }
-        
-        function showHelp() {
-            document.getElementById('help-panel').style.display = 'block';
-            document.getElementById('stats-panel').style.display = 'none';
-            document.getElementById('execution-panel').style.display = 'none';
-        }
-        
-        function showStats() {
-            document.getElementById('stats-panel').style.display = 'block';
-            document.getElementById('help-panel').style.display = 'none';
-            document.getElementById('execution-panel').style.display = 'none';
-        }
-        
-        function clearConsole() {
-            document.getElementById('user-input').value = '';
-            document.getElementById('code-output').innerHTML = '';
-            document.getElementById('execution-output').innerText = '';
-        }
-        
-        // Handle Enter key in input
-        document.getElementById('user-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                generateCode();
-            }
-        });
     </script>
 </body>
 </html>
