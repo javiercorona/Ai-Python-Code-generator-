@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Coding Assistant</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            background-color: #252526;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007acc;
+        }
+        h1 {
+            color: #569cd6;
+            margin: 0;
+        }
+        .subtitle {
+            color: #9cdcfe;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .panel {
+            background-color: #252526;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4ec9b0;
+        }
+        .panel-title {
+            color: #4ec9b0;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .panel-subtitle {
+            color: #9cdcfe;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+        }
+        .code-block {
+            background-color: #1e1e1e;
+            border: 1px solid #3a3d41;
+            border-radius: 3px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+            margin: 10px 0;
+        }
+        .line-numbers {
+            color: #858585;
+            margin-right: 15px;
+            user-select: none;
+        }
+        .command-line {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .prompt {
+            color: #4ec9b0;
+            margin-right: 10px;
+            user-select: none;
+        }
+        #user-input {
+            background-color: #252526;
+            border: 1px solid #3a3d41;
+            color: #d4d4d4;
+            font-family: 'Courier New', monospace;
+            padding: 8px;
+            flex-grow: 1;
+            border-radius: 3px;
+        }
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        .stats-table th {
+            background-color: #2d2d2d;
+            color: #569cd6;
+            text-align: left;
+            padding: 8px;
+        }
+        .stats-table td {
+            padding: 8px;
+            border-bottom: 1px solid #3a3d41;
+        }
+        .stats-table tr:last-child td {
+            border-bottom: none;
+        }
+        .success {
+            color: #4ec9b0;
+        }
+        .error {
+            color: #f48771;
+        }
+        .warning {
+            color: #dcdcaa;
+        }
+        .info {
+            color: #9cdcfe;
+        }
+        .btn {
+            background-color: #0e639c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .btn:hover {
+            background-color: #1177bb;
+        }
+        .btn-danger {
+            background-color: #f14c4c;
+        }
+        .btn-danger:hover {
+            background-color: #ff6161;
+        }
+        .btn-group {
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 AI Coding Assistant</h1>
+            <div class="subtitle">Model: deepseek-ai/deepseek-coder-1.3b-base | Device: CUDA | Safety: ON | Auto-docs: OFF</div>
+        </header>
+
+        <div class="panel">
+            <div class="panel-title">Interactive Console</div>
+            <div class="panel-subtitle">Type your coding request or !help for commands</div>
+            
+            <div class="command-line">
+                <span class="prompt">>>></span>
+                <input type="text" id="user-input" placeholder="Enter your request...">
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn" onclick="generateCode()">Generate</button>
+                <button class="btn" onclick="executeCode()">Execute</button>
+                <button class="btn" onclick="generateDocs()">Document</button>
+                <button class="btn" onclick="generateTests()">Tests</button>
+                <button class="btn" onclick="showHelp()">Help</button>
+                <button class="btn btn-danger" onclick="clearConsole()">Clear</button>
+            </div>
+        </div>
+
+        <div class="panel" id="output-panel">
+            <div class="panel-title">Generated Code</div>
+            <div class="panel-subtitle">42 lines | Generated in 3.21s | Tokens: 256</div>
+            <div class="code-block" id="code-output">
+<span class="line-numbers">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br>22<br>23<br>24<br>25<br>26<br>27<br>28<br>29<br>30<br>31<br>32<br>33<br>34<br>35<br>36<br>37<br>38<br>39<br>40<br>41<br>42</span>def fibonacci(n: int) -> list:
+    """Generate a Fibonacci sequence up to n terms
+    
+    Args:
+        n (int): Number of terms to generate
+        
+    Returns:
+        list: Fibonacci sequence
+    """
+    if n <= 0:
+        return []
+    elif n == 1:
+        return [0]
+    
+    sequence = [0, 1]
+    while len(sequence) < n:
+        next_num = sequence[-1] + sequence[-2]
+        sequence.append(next_num)
+    
+    return sequence
+
+def is_prime(num: int) -> bool:
+    """Check if a number is prime
+    
+    Args:
+        num (int): Number to check
+        
+    Returns:
+        bool: True if prime, False otherwise
+    """
+    if num <= 1:
+        return False
+    for i in range(2, int(num**0.5) + 1):
+        if num % i == 0:
+            return False
+    return True
+
+def main():
+    """Demo the functions"""
+    print("Fibonacci sequence:", fibonacci(10))
+    print("Prime check for 17:", is_prime(17))
+
+if __name__ == "__main__":
+    main()</div>
+        </div>
+
+        <div class="panel" id="execution-panel" style="display: none;">
+            <div class="panel-title">Execution Results</div>
+            <div class="panel-subtitle">Status: <span class="success">SUCCESS</span></div>
+            <div class="code-block" id="execution-output">
+Fibonacci sequence: [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
+Prime check for 17: True
+            </div>
+        </div>
+
+        <div class="panel" id="stats-panel" style="display: none;">
+            <div class="panel-title">Assistant Statistics</div>
+            <table class="stats-table">
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Total Generations</td>
+                    <td>42</td>
+                </tr>
+                <tr>
+                    <td>Average Time (s)</td>
+                    <td>3.21</td>
+                </tr>
+                <tr>
+                    <td>Model</td>
+                    <td>deepseek-ai/deepseek-coder-1.3b-base</td>
+                </tr>
+                <tr>
+                    <td>Device</td>
+                    <td>CUDA</td>
+                </tr>
+                <tr>
+                    <td>Safety Checks</td>
+                    <td>ON</td>
+                </tr>
+                <tr>
+                    <td>Project Files</td>
+                    <td>3</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="panel" id="help-panel" style="display: none;">
+            <div class="panel-title">Available Commands</div>
+            <div class="code-block">
+!help       - Show this help message
+!run        - Execute last generated code
+!docs       - Auto-document code
+!tests      - Generate test cases
+!profile    - Profile code performance
+!git_init   - Initialize git repo
+!api        - Start web server
+!stats      - Show assistant statistics
+!clear      - Clear conversation history
+!exit       - Quit
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function generateCode() {
+            const input = document.getElementById('user-input').value;
+            if (!input) return;
+            
+            // In a real implementation, this would call the backend API
+            document.getElementById('output-panel').style.display = 'block';
+            document.getElementById('execution-panel').style.display = 'none';
+            document.getElementById('stats-panel').style.display = 'none';
+            document.getElementById('help-panel').style.display = 'none';
+            
+            // Simulate different responses based on input
+            if (input.includes('fibonacci')) {
+                document.getElementById('code-output').innerHTML = 
+                    `<span class="line-numbers">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14</span>def fibonacci(n):\n    """Generate Fibonacci sequence up to n terms"""\n    sequence = []\n    a, b = 0, 1\n    for _ in range(n):\n        sequence.append(a)\n        a, b = b, a + b\n    return sequence\n\n# Example usage\nif __name__ == "__main__":\n    print(fibonacci(10))  # [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]`;
+            } else if (input.includes('prime')) {
+                document.getElementById('code-output').innerHTML = 
+                    `<span class="line-numbers">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13</span>def is_prime(num):\n    """Check if a number is prime"""\n    if num <= 1:\n        return False\n    for i in range(2, int(num**0.5) + 1):\n        if num % i == 0:\n            return False\n    return True\n\n# Example usage\nprint(is_prime(17))  # True\nprint(is_prime(20))  # False`;
+            } else {
+                document.getElementById('code-output').innerHTML = 
+                    `<span class="line-numbers">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10</span># ${input}\n\ndef solution():\n    """Implementation for: ${input}"""\n    # TODO: Add implementation\n    pass\n\nif __name__ == "__main__":\n    result = solution()\n    print(f"Result: {result}")`;
+            }
+        }
+        
+        function executeCode() {
+            document.getElementById('execution-panel').style.display = 'block';
+            document.getElementById('stats-panel').style.display = 'none';
+            document.getElementById('help-panel').style.display = 'none';
+            
+            // Simulate execution
+            const code = document.getElementById('code-output').innerText;
+            if (code.includes('fibonacci')) {
+                document.getElementById('execution-output').innerText = '[0, 1, 1, 2, 3, 5, 8, 13, 21, 34]';
+            } else if (code.includes('prime')) {
+                document.getElementById('execution-output').innerText = 'True\nFalse';
+            } else {
+                document.getElementById('execution-output').innerText = 'Result: None';
+            }
+        }
+        
+        function generateDocs() {
+            alert('Documentation generation would be implemented in the real application');
+        }
+        
+        function generateTests() {
+            alert('Test generation would be implemented in the real application');
+        }
+        
+        function showHelp() {
+            document.getElementById('help-panel').style.display = 'block';
+            document.getElementById('stats-panel').style.display = 'none';
+            document.getElementById('execution-panel').style.display = 'none';
+        }
+        
+        function showStats() {
+            document.getElementById('stats-panel').style.display = 'block';
+            document.getElementById('help-panel').style.display = 'none';
+            document.getElementById('execution-panel').style.display = 'none';
+        }
+        
+        function clearConsole() {
+            document.getElementById('user-input').value = '';
+            document.getElementById('code-output').innerHTML = '';
+            document.getElementById('execution-output').innerText = '';
+        }
+        
+        // Handle Enter key in input
+        document.getElementById('user-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateCode();
+            }
+        });
+    </script>
+</body>
+</html>
